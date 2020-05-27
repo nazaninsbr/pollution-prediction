@@ -1,0 +1,1 @@
+path_to_data = '../Data/polution_dataSet.npy'
