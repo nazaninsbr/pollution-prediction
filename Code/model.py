@@ -1,6 +1,5 @@
 from keras.models import Sequential
-from keras.layers import Dense
-from keras.layers import LSTM
+from keras.layers import Dense, Dropout, LSTM
 import matplotlib.pyplot as plt 
 import time 
 import pandas as pd
@@ -8,8 +7,8 @@ import numpy as np
 
 class Model:
     def __init__(self, train_X, train_y, test_X, test_y, 
-                loss_function, optimizer, validation_split,
-                number_of_epochs, batch_size, 
+                loss_function, optimizer, validation_split, add_dropout,
+                number_of_epochs, batch_size,
                 file_save_name):
 
         self.train_X = train_X
@@ -22,8 +21,11 @@ class Model:
         self.number_of_epochs = number_of_epochs
         self.batch_size = batch_size
         self.validation_split = validation_split
+        self.add_dropout = add_dropout
 
         self.file_save_name = file_save_name
+
+        self.model = None 
 
     def plot_accuracy_and_loss(self, history):
         plt.plot(history.history['loss'])
@@ -68,30 +70,13 @@ class Model:
         axs[0].plot(data['P'], color= 'red')
         axs[1].plot(data['A'], color='green')
         plt.savefig(self.file_save_name+'_subplots_compare_timeseries.png')
-        plt.cla()
-
-class LSTM_Model(Model):
-    def __init__(self, train_X, train_y, test_X, test_y, 
-                loss_function, optimizer, validation_split,
-                number_of_epochs, batch_size, file_save_name):
-
-        Model.__init__(self, train_X, train_y, test_X, test_y, 
-                loss_function, optimizer, validation_split,
-                number_of_epochs, batch_size, file_save_name)
-
-        self.model = self.create_model()
-    
-    def create_model(self):
-        model = Sequential()
-        model.add(LSTM(30, return_sequences= True, input_shape=(self.train_X.shape[1], self.train_X.shape[2])))
-        model.add(LSTM(30))
-        model.add(Dense(1))
-        model.compile(loss=self.loss_function, optimizer=self.optimizer)
-        return model 
+        axs[0].cla()
+        axs[1].cla()
+        plt.close('all')
 
     def train_and_report_results(self):
         training_start_time = time.time()
-
+        
         history = self.model.fit(self.train_X, self.train_y, epochs=self.number_of_epochs, batch_size=self.batch_size, validation_split=self.validation_split, verbose=2, shuffle=False)
         
         training_end_time = time.time()
@@ -105,4 +90,64 @@ class LSTM_Model(Model):
         predicted = {'train': train_yhat, 'test': test_yhat}
         self.actual_vs_predicted_values_visualization(actual, predicted)
 
+
+    def test_different_loss_and_optimization_functions(self):
+        for opt in ['adam', 'rmsprop', 'adagrad']:
+            for l in ['mae', 'mean_squared_error']:
+                self.loss_function = l
+                self.optimizer = opt 
+                print('Testing: Optimizer = {}, Loss = {}'.format(self.optimizer, self.loss_function))
+                self.file_save_name = self.file_save_name+'_opt_{}_loss_{}'.format(self.optimizer, self.loss_function)
+                self.train_and_report_results()
+
+class LSTM_Model(Model):
+    def __init__(self, train_X, train_y, test_X, test_y, 
+                loss_function, optimizer, validation_split, add_dropout,
+                number_of_epochs, batch_size, file_save_name):
+
+        Model.__init__(self, train_X, train_y, test_X, test_y, 
+                loss_function, optimizer, validation_split, add_dropout,
+                number_of_epochs, batch_size, file_save_name)
+
+        self.create_model()
     
+    def create_model(self):
+        model = Sequential()
+        model.add(LSTM(30, return_sequences= True, input_shape=(self.train_X.shape[1], self.train_X.shape[2])))
+        model.add(LSTM(30))
+        if self.add_dropout:
+            model.add(Dropout(0.2))
+        model.add(Dense(1))
+        model.compile(loss=self.loss_function, optimizer=self.optimizer)
+        self.model = model
+
+
+class GRU_Model(Model):
+    def __init__(self, train_X, train_y, test_X, test_y, 
+                loss_function, optimizer, validation_split, add_dropout,
+                number_of_epochs, batch_size, file_save_name):
+
+        Model.__init__(self, train_X, train_y, test_X, test_y, 
+                loss_function, optimizer, validation_split, add_dropout,
+                number_of_epochs, batch_size, file_save_name)
+
+        self.create_model()
+    
+    def create_model(self):
+        pass
+
+
+class RNN_Model(Model):
+    def __init__(self, train_X, train_y, test_X, test_y, 
+                loss_function, optimizer, validation_split, add_dropout,
+                number_of_epochs, batch_size, file_save_name):
+
+        Model.__init__(self, train_X, train_y, test_X, test_y, 
+                loss_function, optimizer, validation_split, add_dropout,
+                number_of_epochs, batch_size, file_save_name)
+
+        self.create_model()
+    
+    def create_model(self):
+        pass
+
