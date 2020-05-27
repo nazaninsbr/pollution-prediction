@@ -4,7 +4,12 @@ import model
 
 
 def run_part_1_code(train_X, train_y, test_X, test_y):
-    pass
+    # LSTM Model 
+    lstm_1 = model.LSTM_Model(train_X, train_y, test_X, test_y, 
+                loss_function = constants.loss_function, optimizer = constants.optimizer, 
+                number_of_epochs = constants.number_of_epochs, batch_size = constants.batch_size, 
+                file_save_name = '../Generated-Files/basic_lstm_model')
+    lstm_1.train_and_report_results()
 
 def main():
     data = data_processor.read_data(constants.path_to_data)
