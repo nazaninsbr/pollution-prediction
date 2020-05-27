@@ -1,6 +1,6 @@
 # Pollution-Prediction
 
-- [ ] Read Data
+- [x] Read Data
 - [ ] Part 1
 
 *  [ ] 1.1
