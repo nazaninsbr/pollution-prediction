@@ -1,5 +1,5 @@
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, LSTM
+from keras.layers import Dense, Dropout, LSTM, SimpleRNN, GRU
 import matplotlib.pyplot as plt 
 import time 
 import pandas as pd
@@ -23,7 +23,8 @@ class Model:
         self.validation_split = validation_split
         self.add_dropout = add_dropout
 
-        self.file_save_name = file_save_name
+        self.original_file_save_name = file_save_name
+        self.file_save_name = self.original_file_save_name 
 
         self.model = None 
 
@@ -97,7 +98,7 @@ class Model:
                 self.loss_function = l
                 self.optimizer = opt 
                 print('Testing: Optimizer = {}, Loss = {}'.format(self.optimizer, self.loss_function))
-                self.file_save_name = self.file_save_name+'_opt_{}_loss_{}'.format(self.optimizer, self.loss_function)
+                self.file_save_name = self.original_file_save_name+'_opt_{}_loss_{}'.format(self.optimizer, self.loss_function)
                 self.train_and_report_results()
 
 class LSTM_Model(Model):
@@ -134,7 +135,14 @@ class GRU_Model(Model):
         self.create_model()
     
     def create_model(self):
-        pass
+        model = Sequential()
+        model.add(GRU(30, return_sequences= True, input_shape=(self.train_X.shape[1], self.train_X.shape[2])))
+        model.add(GRU(30))
+        if self.add_dropout:
+            model.add(Dropout(0.2))
+        model.add(Dense(1))
+        model.compile(loss=self.loss_function, optimizer=self.optimizer)
+        self.model = model
 
 
 class RNN_Model(Model):
@@ -149,5 +157,12 @@ class RNN_Model(Model):
         self.create_model()
     
     def create_model(self):
-        pass
+        model = Sequential()
+        model.add(SimpleRNN(30, return_sequences= True, input_shape=(self.train_X.shape[1], self.train_X.shape[2])))
+        model.add(SimpleRNN(30))
+        if self.add_dropout:
+            model.add(Dropout(0.2))
+        model.add(Dense(1))
+        model.compile(loss=self.loss_function, optimizer=self.optimizer)
+        self.model = model
 
