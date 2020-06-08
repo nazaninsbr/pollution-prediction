@@ -1,5 +1,6 @@
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, LSTM, SimpleRNN, GRU
+from keras.models import Model as keras_Model
+from keras.layers import Dense, Dropout, LSTM, SimpleRNN, GRU, Input, Average
 import matplotlib.pyplot as plt 
 import time 
 import pandas as pd
@@ -122,7 +123,6 @@ class LSTM_Model(Model):
         model.compile(loss=self.loss_function, optimizer=self.optimizer)
         self.model = model
 
-
 class GRU_Model(Model):
     def __init__(self, train_X, train_y, test_X, test_y, 
                 loss_function, optimizer, validation_split, add_dropout,
@@ -166,3 +166,73 @@ class RNN_Model(Model):
         model.compile(loss=self.loss_function, optimizer=self.optimizer)
         self.model = model
 
+
+class FusionModel(Model):
+    def __init__(self, train_X, train_y, test_X, test_y, 
+                loss_function, optimizer, validation_split, add_dropout,
+                number_of_epochs, batch_size,
+                file_save_name):
+
+        self.train_X_1 = train_X[0]
+        self.train_X_2 = train_X[1]
+        self.train_X_3 = train_X[2]
+        
+        self.train_y = train_y
+
+        self.test_X_1 = test_X[0]
+        self.test_X_2 = test_X[1]
+        self.test_X_3 = test_X[2]
+
+        self.test_y = test_y
+
+        self.loss_function = loss_function 
+        self.optimizer = optimizer
+        self.number_of_epochs = number_of_epochs
+        self.batch_size = batch_size
+        self.validation_split = validation_split
+        self.add_dropout = add_dropout
+
+        self.original_file_save_name = file_save_name
+        self.file_save_name = self.original_file_save_name 
+
+        self.model = self.create_model() 
+
+    def create_model(self):
+        print(self.train_X_1.shape, self.train_X_3.shape, self.train_X_2.shape)
+        inp1 = Input(shape=(self.train_X_1.shape[1], self.train_X_1.shape[2]))
+        m1 = LSTM(30, return_sequences= True)(inp1)
+        m2 = LSTM(30)(m1)
+        d1 = Dense(1)(m2)
+
+        inp2 = Input(shape=(self.train_X_2.shape[1], self.train_X_2.shape[2]))
+        m3 = LSTM(30, return_sequences= True)(inp2)
+        m4 = LSTM(30)(m3)
+        d2 = Dense(1)(m4)
+
+
+        inp3 = Input(shape=(self.train_X_3.shape[1], self.train_X_3.shape[2]))
+        m5 = LSTM(30, return_sequences= True)(inp3)
+        m6 = LSTM(30)(m5)
+        d3 = Dense(1)(m6)
+
+        avg_l = Average()([d1, d2, d3])
+
+        model = keras_Model(inputs=[inp1, inp2, inp3], outputs=avg_l)
+        model.compile(loss=self.loss_function, optimizer=self.optimizer)
+        return model 
+
+    def train_fusion_model(self):
+        training_start_time = time.time()
+        
+        history = self.model.fit([self.train_X_1, self.train_X_2, self.train_X_3], self.train_y, epochs=self.number_of_epochs, batch_size=self.batch_size, validation_split=self.validation_split, verbose=2, shuffle=False)
+        
+        training_end_time = time.time()
+        print('Training Duration:', training_end_time-training_start_time)
+
+        self.plot_accuracy_and_loss(history)
+
+        train_yhat = self.model.predict([self.train_X_1, self.train_X_2, self.train_X_3])
+        test_yhat = self.model.predict([self.test_X_1, self.test_X_2, self.test_X_3])
+        actual = {'train': self.train_y, 'test': self.test_y}
+        predicted = {'train': train_yhat, 'test': test_yhat}
+        self.actual_vs_predicted_values_visualization(actual, predicted)

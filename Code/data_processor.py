@@ -1,4 +1,5 @@
 import numpy as np 
+import datetime
 
 def read_data(file_path):
     ###################################
@@ -18,10 +19,136 @@ def prep_data_for_model_method_1(data, window_size):
     y = np.array(y)
     return X, y
 
+def prep_data_for_model_weekly(data):
+    date_time_added_data = {}
+    this_time = datetime.datetime(2014, 1, 1, 0, 0)
+    for data_id in range(data.shape[0]):
+        if not data_id == 0:
+            this_time = this_time + datetime.timedelta(hours=1)
+        date_time_added_data[this_time] = data[data_id]
+    
+    X, y = [], []
+    for time_key in date_time_added_data.keys():
+        try:
+            all_train_data_vals = [
+                date_time_added_data[time_key - datetime.timedelta(days=7)],
+                date_time_added_data[time_key - datetime.timedelta(days=6)],
+                date_time_added_data[time_key - datetime.timedelta(days=5)],
+                date_time_added_data[time_key - datetime.timedelta(days=4)],
+                date_time_added_data[time_key - datetime.timedelta(days=3)],
+                date_time_added_data[time_key - datetime.timedelta(days=2)],
+                date_time_added_data[time_key - datetime.timedelta(days=1)]
+            ]
+            X.append(all_train_data_vals)
+            y.append([date_time_added_data[time_key][0]])
+        except Exception:
+            pass
+
+    X = np.array(X)
+    y = np.array(y)
+    return X, y 
+
+def prep_data_for_model_monthly(data):
+    date_time_added_data = {}
+    this_time = datetime.datetime(2014, 1, 1, 0, 0)
+    for data_id in range(data.shape[0]):
+        if not data_id == 0:
+            this_time = this_time + datetime.timedelta(hours=1)
+        date_time_added_data[this_time] = data[data_id]
+    
+    X, y = [], []
+    for time_key in date_time_added_data.keys():
+        try:
+            all_train_data_vals = [
+                date_time_added_data[time_key - datetime.timedelta(days=21)],
+                date_time_added_data[time_key - datetime.timedelta(days=14)],
+                date_time_added_data[time_key - datetime.timedelta(days=7)]
+            ]
+            X.append(all_train_data_vals)
+            y.append([date_time_added_data[time_key][0]])
+        except Exception:
+            pass
+
+    X = np.array(X)
+    y = np.array(y)
+    return X, y 
+
+def prep_data_for_model_fusion(data):
+    date_time_added_data = {}
+    this_time = datetime.datetime(2014, 1, 1, 0, 0)
+    for data_id in range(data.shape[0]):
+        if not data_id == 0:
+            this_time = this_time + datetime.timedelta(hours=1)
+        date_time_added_data[this_time] = data[data_id]
+    
+    X, y = [[], [], []], []
+    for time_key in date_time_added_data.keys():
+        try:
+            all_train_data_vals_monthly = [
+                date_time_added_data[time_key - datetime.timedelta(days=21)],
+                date_time_added_data[time_key - datetime.timedelta(days=14)],
+                date_time_added_data[time_key - datetime.timedelta(days=7)]
+            ]
+
+            all_train_data_vals_weekly = [
+                date_time_added_data[time_key - datetime.timedelta(days=7)],
+                date_time_added_data[time_key - datetime.timedelta(days=6)],
+                date_time_added_data[time_key - datetime.timedelta(days=5)],
+                date_time_added_data[time_key - datetime.timedelta(days=4)],
+                date_time_added_data[time_key - datetime.timedelta(days=3)],
+                date_time_added_data[time_key - datetime.timedelta(days=2)],
+                date_time_added_data[time_key - datetime.timedelta(days=1)]
+            ]
+
+            all_train_data_vals_hourly = [
+                date_time_added_data[time_key - datetime.timedelta(hours=11)],
+                date_time_added_data[time_key - datetime.timedelta(hours=10)],
+                date_time_added_data[time_key - datetime.timedelta(hours=9)],
+                date_time_added_data[time_key - datetime.timedelta(hours=8)],
+                date_time_added_data[time_key - datetime.timedelta(hours=7)],
+                date_time_added_data[time_key - datetime.timedelta(hours=6)],
+                date_time_added_data[time_key - datetime.timedelta(hours=5)],
+                date_time_added_data[time_key - datetime.timedelta(hours=4)],
+                date_time_added_data[time_key - datetime.timedelta(hours=3)],
+                date_time_added_data[time_key - datetime.timedelta(hours=2)],
+                date_time_added_data[time_key - datetime.timedelta(hours=1)]
+            ]
+
+            X[0].append(all_train_data_vals_monthly)
+            X[1].append(all_train_data_vals_weekly)
+            X[2].append(all_train_data_vals_hourly)
+
+            y.append([date_time_added_data[time_key][0]])
+        except Exception:
+            pass
+
+    X = [np.array(X[0]), np.array(X[1]), np.array(X[2])]
+    y = np.array(y)
+    return X, y 
+
 
 def split_and_prep_data(data, split_point, window_size, method_name):
     if method_name == 'normal':
         X, y = prep_data_for_model_method_1(data, window_size)
-    X_train, y_train = X[:split_point[0]], y[:split_point[0]]
-    X_test, y_test = X[split_point[0]+1:split_point[1]], y[split_point[0]+1:split_point[1]]
+    if method_name == 'weekly':
+        X, y = prep_data_for_model_weekly(data)
+    if method_name == 'monthly':
+        X, y = prep_data_for_model_monthly(data)
+    if method_name == 'fusion':
+        X, y = prep_data_for_model_fusion(data)
+
+
+    if method_name == 'fusion':
+        X_train = [X[0][:split_point[0]], X[1][:split_point[0]], X[2][:split_point[0]]]
+        X_test = [
+            X[0][split_point[0]+1:split_point[1]],  
+            X[1][split_point[0]+1:split_point[1]],
+            X[2][split_point[0]+1:split_point[1]]
+        ]
+
+        y_train = y[:split_point[0]]
+        y_test = y[split_point[0]+1:split_point[1]]
+    else:
+        X_train, y_train = X[:split_point[0]], y[:split_point[0]]
+        X_test, y_test = X[split_point[0]+1:split_point[1]], y[split_point[0]+1:split_point[1]]
     return X_train, y_train, X_test, y_test
