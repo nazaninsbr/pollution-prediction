@@ -131,6 +131,37 @@ def run_part_7_code():
             annot=True)
     plt.show()
 
+def run_part_8_code(data):
+    columns = [f'col_{num}' for num in range(8)]
+    index = [f'index_{num}' for num in range(data.shape[0])]
+    df = pd.DataFrame(data, columns=columns, index=index)
+    df.columns = ['pollution', 'dew', 'temp', 'pressure', 'wind_dir', 'wind_spd', 'snow', 'rain']
+    df = df.drop(columns = ['dew', 'temp', 'pressure', 'snow', 'rain'])
+    data_after_removal = df.values
+
+    train_X, train_y, test_X, test_y = data_processor.split_and_prep_data(data_after_removal, split_point = (constants.trian_split_part, constants.test_split_part), window_size = constants.window_size, method_name = 'generator')
+    # LSTM Model 
+    lstm_1 = model.LSTM_Model(train_X, train_y, test_X, test_y, 
+                loss_function = constants.loss_function, optimizer = constants.optimizer, validation_split = constants.validation_split, add_dropout = constants.add_dropout,
+                number_of_epochs = constants.number_of_epochs, batch_size = constants.batch_size, 
+                file_save_name = '../Generated-Files/Q8_lstm_model')
+    lstm_1.train_and_report_results()
+
+    # GRU Model
+    gru_1 = model.GRU_Model(train_X, train_y, test_X, test_y, 
+                loss_function = constants.loss_function, optimizer = constants.optimizer, validation_split = constants.validation_split, add_dropout = constants.add_dropout,
+                number_of_epochs = constants.number_of_epochs, batch_size = constants.batch_size, 
+                file_save_name = '../Generated-Files/Q8_GRU_model')
+    gru_1.train_and_report_results()
+
+    # RNN Model
+    rnn_1 = model.RNN_Model(train_X, train_y, test_X, test_y, 
+                loss_function = constants.loss_function, optimizer = constants.optimizer, validation_split = constants.validation_split, add_dropout = constants.add_dropout,
+                number_of_epochs = constants.number_of_epochs, batch_size = constants.batch_size, 
+                file_save_name = '../Generated-Files/Q8_RNN_model')
+    rnn_1.train_and_report_results()
+
+
 def part_one_codes(data):
     # using the data generator 
     train_X, train_y, test_X, test_y = data_processor.split_and_prep_data(data, split_point = (constants.trian_split_part, constants.test_split_part), window_size = constants.window_size, method_name = 'generator')
@@ -153,6 +184,9 @@ def part_one_codes(data):
 
     # answering part 7
     run_part_7_code()
+
+    # answering part 8
+    run_part_8_code(data)
 
 def main():
     data = data_processor.read_data(constants.path_to_data)
