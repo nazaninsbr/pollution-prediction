@@ -1,5 +1,6 @@
 import numpy as np 
 import datetime
+from keras.preprocessing.sequence import TimeseriesGenerator
 
 def read_data(file_path):
     ###################################
@@ -126,10 +127,55 @@ def prep_data_for_model_fusion(data):
     y = np.array(y)
     return X, y 
 
+def prep_data_for_model_method_using_generetor(data, window_size):
+    inputs, outputs = [], []
+    for val in data:
+        outputs.append(val[0])
+        inputs.append(val)
+    inputs, outputs = np.array(inputs), np.array(outputs)
+    data_gen_train = TimeseriesGenerator(
+        inputs,
+        outputs,
+        length=12,
+        stride=1,
+        start_index=0,
+        end_index=12000,
+        shuffle=False,
+        reverse=False,
+        batch_size = 1
+    )
+    
+    X_train, y_train = [], []
+    for this_val_ind in range(len(data_gen_train)):
+        X_train.append(data_gen_train[this_val_ind][0][0])
+        y_train.append(data_gen_train[this_val_ind][1])
+    X_train, y_train = np.array(X_train), np.array(y_train) 
+
+    data_gen_test = TimeseriesGenerator(
+        inputs,
+        outputs,
+        length=11,
+        stride=12,
+        start_index=12000,
+        end_index=15000,
+        shuffle=False,
+        reverse=False,
+        batch_size = 1
+    )
+
+    X_test, y_test = [], []
+    for this_val_ind in range(len(data_gen_test)):
+        X_test.append(data_gen_test[this_val_ind][0][0])
+        y_test.append(data_gen_test[this_val_ind][1])
+    X_test, y_test = np.array(X_test), np.array(y_test) 
+
+    return X_train, y_train, X_test, y_test
 
 def split_and_prep_data(data, split_point, window_size, method_name):
     if method_name == 'normal':
         X, y = prep_data_for_model_method_1(data, window_size)
+    if method_name == 'generator':
+        return prep_data_for_model_method_using_generetor(data, window_size)
     if method_name == 'weekly':
         X, y = prep_data_for_model_weekly(data)
     if method_name == 'monthly':
