@@ -136,7 +136,7 @@ def prep_data_for_model_method_using_generetor(data, window_size):
     data_gen_train = TimeseriesGenerator(
         inputs,
         outputs,
-        length=12,
+        length=11,
         stride=1,
         start_index=0,
         end_index=12000,

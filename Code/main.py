@@ -127,7 +127,8 @@ def run_part_7_code():
     sns.heatmap(corr, 
             xticklabels=corr.columns.values,
             yticklabels=corr.columns.values,
-            cmap=sns.diverging_palette(220, 10, as_cmap=True))
+            cmap=sns.diverging_palette(220, 10, as_cmap=True), 
+            annot=True)
     plt.show()
 
 def part_one_codes(data):
@@ -136,22 +137,22 @@ def part_one_codes(data):
     run_window_11_codes_using_generator_data(train_X, train_y, test_X, test_y)
 
     # reading the data and working with it in the window = 11 format
-    # train_X, train_y, test_X, test_y = data_processor.split_and_prep_data(data, split_point = (constants.trian_split_part, constants.test_split_part), window_size = constants.window_size, method_name = 'normal')
-    # run_window_11_codes(train_X, train_y, test_X, test_y)
+    train_X, train_y, test_X, test_y = data_processor.split_and_prep_data(data, split_point = (constants.trian_split_part, constants.test_split_part), window_size = constants.window_size, method_name = 'normal')
+    run_window_11_codes(train_X, train_y, test_X, test_y)
 
-    # # answering part 4
-    # train_X, train_y, test_X, test_y = data_processor.split_and_prep_data(data, split_point = (constants.trian_split_part, constants.test_split_part), window_size = constants.window_size, method_name = 'weekly')
-    # run_part_4_codes(train_X, train_y, test_X, test_y, 'weekly')
+    # answering part 4
+    train_X, train_y, test_X, test_y = data_processor.split_and_prep_data(data, split_point = (constants.trian_split_part, constants.test_split_part), window_size = constants.window_size, method_name = 'weekly')
+    run_part_4_codes(train_X, train_y, test_X, test_y, 'weekly')
 
-    # train_X, train_y, test_X, test_y = data_processor.split_and_prep_data(data, split_point = (constants.trian_split_part, constants.test_split_part), window_size = constants.window_size, method_name = 'monthly')
-    # run_part_4_codes(train_X, train_y, test_X, test_y, 'monthly')
+    train_X, train_y, test_X, test_y = data_processor.split_and_prep_data(data, split_point = (constants.trian_split_part, constants.test_split_part), window_size = constants.window_size, method_name = 'monthly')
+    run_part_4_codes(train_X, train_y, test_X, test_y, 'monthly')
 
-    # # answering part 6
-    # train_X, train_y, test_X, test_y = data_processor.split_and_prep_data(data, split_point = (constants.trian_split_part, constants.test_split_part), window_size = constants.window_size, method_name = 'fusion')
-    # run_part_6_codes(train_X, train_y, test_X, test_y)
+    # answering part 6
+    train_X, train_y, test_X, test_y = data_processor.split_and_prep_data(data, split_point = (constants.trian_split_part, constants.test_split_part), window_size = constants.window_size, method_name = 'fusion')
+    run_part_6_codes(train_X, train_y, test_X, test_y)
 
     # answering part 7
-    # run_part_7_code()
+    run_part_7_code()
 
 def main():
     data = data_processor.read_data(constants.path_to_data)
