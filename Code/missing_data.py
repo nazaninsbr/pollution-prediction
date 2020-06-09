@@ -9,11 +9,9 @@ import matplotlib.pyplot as plt
 def erase_data(data, nan_rate):
     output_data = copy.deepcopy(data)
     nr, nc = output_data.shape
-    missing_index = np.random.random(nr * nc).reshape(nr, nc) > nan_rate
-    if len(np.where(sum(missing_index.T) == 0)[0]) == 0:
-        output_data[missing_index == False] = np.nan
-    else:
-        return erase_data(data, nan_rate)
+    for ind in range(nc):
+        observed_index = np.random.random(nr) > nan_rate
+        output_data[observed_index == False, ind] = np.nan
     return output_data
 
 def triple_dot(D1, D2, D3):
@@ -105,7 +103,7 @@ import data_processor
 import constants
 data = data_processor.read_data(constants.path_to_data)
 missed_data = erase_data(data, 0.2)
-plot_kde(missed_data)
+# plot_kde(missed_data)
 
 our_pred = predict_method1(missed_data)
 
