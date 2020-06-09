@@ -60,7 +60,7 @@ def predict_method1(X, max_iter = 3000, eps = 1e-08):
     return X_p
 
 def predict_method2(X):
-    df = pd.DataFrame(missed_data)
+    df = pd.DataFrame(X)
     imputer = KNNImputer(n_neighbors=5)
     return imputer.fit_transform(df)
 
@@ -98,38 +98,3 @@ def plot_kde(X):
         sns.kdeplot(missed_data[true_ind, i], shade=True, bw=.02, color="olive", ax=a[i])
         a[i].set_title(col_name[i])
     plt.show()
-
-import data_processor
-import constants
-data = data_processor.read_data(constants.path_to_data)
-missed_data = erase_data(data, 0.2)
-# plot_kde(missed_data)
-
-our_pred = predict_method1(missed_data)
-
-knn_pred = predict_method2(missed_data)
-
-mean_pred = predict_method3(missed_data)
-
-
-print("our predictor ::: ")
-print("> for all data:")
-evaluate(data, our_pred, missed_data)
-print("> for missing data:")
-evaluate(data, our_pred, missed_data, False)
-
-print("##################")
-
-print("knn predictor ::: ")
-print("> for all data:")
-evaluate(data, knn_pred, missed_data)
-print("> for missing data:")
-evaluate(data, knn_pred, missed_data, False)
-
-print("##################")
-
-print("mean predictor ::: ")
-print("> for all data:")
-evaluate(data, mean_pred, missed_data)
-print("> for missing data:")
-evaluate(data, mean_pred, missed_data, False)
